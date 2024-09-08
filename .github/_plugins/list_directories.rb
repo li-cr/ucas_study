@@ -1,76 +1,53 @@
 require 'fileutils'
 
 module Jekyll
-  class DirectoryPageGenerator < Jekyll::Generator
-    priority :high
+  class GenerateHTMLForFiles < Jekyll::Generator
+    priority :low
 
     def generate(site)
-      # 扫描所有目录并生成 HTML 页面
-      scan_directories(site.source).each do |dir|
-        # 为每个目录生成一个 HTML 页面
-        create_directory_page(site, dir[:path], dir[:files])
+      base_directory = site.source
+      output_directory = File.join(base_directory, "..", "_site")  # 指向 _site 的同级目录
+
+      # 确保输出目录存在
+      FileUtils.mkdir_p(output_directory)
+
+      # 扫描目录及其子目录中的所有文件
+      Dir.glob("#{base_directory}/**/*").reject { |f| File.directory?(f) }.each do |file_path|
+        # 为每个文件在其同级目录中创建 HTML 文件
+        create_html_for_file(file_path, base_directory)
       end
     end
 
     private
 
-    def scan_directories(root)
-      entries = []
+    def create_html_for_file(file_path, base_directory)
+      file_name = File.basename(file_path, File.extname(file_path))
+      file_extension = File.extname(file_path)
+      relative_path = file_path.sub("#{base_directory}/", '')
+      parent_dir = File.dirname(file_path)
 
-      # 扫描根目录下的文件
-      root_dir_files = Dir.glob("#{root}/*").reject { |f| File.directory?(f) }
-      root_files = root_dir_files.map do |file|
-        {
-          name: File.basename(file),
-          path: file.sub("#{root}/", '')  # 去除根路径前缀
-        }
-      end
-      entries << { path: '', files: root_files }  # 根目录的文件
-
-      # 扫描子目录
-      Dir.glob("#{root}/**/*").select { |f| File.directory?(f) }.each do |dir|
-        relative_path = dir.sub("#{root}/", '')  # 获取相对路径
-        next if ["_site", "_plugins", "_layouts"].any? { |exclude| relative_path.start_with?(exclude) }  # 排除指定目录
-        files = Dir.glob("#{dir}/*").reject { |f| File.directory?(f) }.map do |file|
-          {
-            name: File.basename(file),
-            path: file.sub("#{root}/", '')  # 去除根路径前缀
-          }
-        end
-        entries << { path: relative_path, files: files }
-      end
-
-      entries
-    end
-
-    def create_directory_page(site, path, files)
-      # 确保目录路径是相对路径
-      dir_path = path.empty? ? 'index.html' : "#{path}/index.html"
-
-      # 创建文件内容
-      content = <<~HTML
-        ---
-        layout: default
-        title: Directory Listing for #{path.empty? ? '/' : path}
-        ---
-        <h1>Directory Listing for #{path.empty? ? '/' : path}</h1>
-        <ul>
-          #{files.map { |file| "<li><a href='#{file[:path]}'>#{file[:name]}</a></li>" }.join("\n")}
-        </ul>
+      # 创建 HTML 文件内容
+      html_content = <<~HTML
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>File: #{file_name}</title>
+        </head>
+        <body>
+          <h1>File: #{file_name}</h1>
+          <p><a href="#{relative_path}">Download #{file_name}#{file_extension}</a></p>
+        </body>
+        </html>
       HTML
 
-      # 将内容写入文件
-      file_path = File.join(site.source, dir_path)
-      FileUtils.mkdir_p(File.dirname(file_path))  # 确保目录存在
-      File.write(file_path, content)
+      # 创建 HTML 文件路径，在文件的同级目录中
+      html_file_path = File.join(parent_dir, "#{file_name}.html")
 
-      # 使用 Jekyll::Document 类来处理 HTML 文件
-      site.pages << Jekyll::Document.new(
-        site,
-        File.dirname(file_path),
-        File.basename(file_path),
-        content
-      )
+      # 写入 HTML 文件
+      File.write(html_file_path, html_content)
+      puts "Created #{html_file_path}"  # 输出调试信息
     end
   end
 end
