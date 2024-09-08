@@ -1,53 +1,55 @@
-require 'fileutils'
-
 module Jekyll
-  class GenerateHTMLForFiles < Jekyll::Generator
-    priority :low
-
-    def generate(site)
-      base_directory = site.source
-      output_directory = File.join(base_directory, "..", "_site")  # 指向 _site 的同级目录
-
-      # 确保输出目录存在
-      FileUtils.mkdir_p(output_directory)
-
-      # 扫描目录及其子目录中的所有文件
-      Dir.glob("#{base_directory}/**/*").reject { |f| File.directory?(f) }.each do |file_path|
-        # 为每个文件在其同级目录中创建 HTML 文件
-        create_html_for_file(file_path, base_directory)
+    class ListDirectories < Liquid::Tag
+      def initialize(tag_name, text, tokens)
+        super
+        @text = text.strip
+      end
+  
+      def render(context)
+        site = context.registers[:site]
+        base_url = site.config['baseurl'] || ''
+        directories_and_files = scan_directories(site.source)
+        
+        directories_and_files.map do |entry|
+          next if entry[:path].start_with?("_site", "_plugins", "_layouts")  # 排除指定目录
+          "<h2>#{entry[:path]}</h2>" +
+          "<ul>" +
+          entry[:files].map do |file|
+            "<li><a href='#{File.join(base_url, file[:path])}'>#{file[:name]}</a></li>"
+          end.join + 
+          "</ul>"
+        end.join
+      end
+  
+      def scan_directories(root)
+        entries = []
+        
+        # 扫描根目录下的文件
+        root_dir_files = Dir.glob("#{root}/*").reject { |f| File.directory?(f) }
+        root_files = root_dir_files.map do |file|
+          {
+            name: File.basename(file),
+            path: file.sub("#{root}/", '')  # 去除根路径前缀
+          }
+        end
+        entries << { path: '', files: root_files }  # 根目录的文件
+        
+        # 扫描子目录
+        Dir.glob("#{root}/**/*").select { |f| File.directory?(f) }.each do |dir|
+          relative_path = dir.sub("#{root}/", '')  # 获取相对路径
+          next if ["_site", "_plugins", "_layouts"].any? { |exclude| relative_path.start_with?(exclude) }  # 排除指定目录
+          files = Dir.glob("#{dir}/**/*").reject { |f| File.directory?(f) }.map do |file|
+            {
+              name: File.basename(file),
+              path: file.sub("#{root}/", '')  # 去除根路径前缀
+            }
+          end
+          entries << { path: relative_path, files: files }
+        end
+        
+        entries
       end
     end
-
-    private
-
-    def create_html_for_file(file_path, base_directory)
-      file_name = File.basename(file_path, File.extname(file_path))
-      file_extension = File.extname(file_path)
-      relative_path = file_path.sub("#{base_directory}/", '')
-      parent_dir = File.dirname(file_path)
-
-      # 创建 HTML 文件内容
-      html_content = <<~HTML
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>File: #{file_name}</title>
-        </head>
-        <body>
-          <h1>File: #{file_name}</h1>
-          <p><a href="#{relative_path}">Download #{file_name}#{file_extension}</a></p>
-        </body>
-        </html>
-      HTML
-
-      # 创建 HTML 文件路径，在文件的同级目录中
-      html_file_path = File.join(parent_dir, "#{file_name}.html")
-
-      # 写入 HTML 文件
-      File.write(html_file_path, html_content)
-      puts "Created #{html_file_path}"  # 输出调试信息
-    end
   end
-end
+  
+  Liquid::Template.register_tag('list_directories', Jekyll::ListDirectories)

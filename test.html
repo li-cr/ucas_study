@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7z 文件预览</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .file-options {
+            margin-bottom: 20px;
+        }
+
+        #file-preview {
+            margin-top: 20px;
+        }
+
+        #file-preview pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>7z 文件预览</h1>
+        <div class="file-options">
+            <input type="file" id="file-input" />
+        </div>
+        <div id="file-preview">
+            <h2>文件内容预览</h2>
+            <pre id="file-content"></pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                // 创建一个新的 FileReader 对象
+                const reader = new FileReader();
+
+                // 当文件读取完成时
+                reader.onload = function (e) {
+                    // 使用 7zip-js 解析 7z 文件
+                    const archive = new JS7z.Archive();
+                    archive.open(e.target.result).then(function () {
+                        const previewContainer = document.getElementById('file-content');
+                        previewContainer.textContent = ''; // 清空现有内容
+
+                        // 遍历 7z 文件中的每个文件
+                        archive.files.forEach(function (file) {
+                            file.getData().then(function (fileData) {
+                                const fileElement = document.createElement('div');
+                                fileElement.innerHTML = `<h3>${file.name}</h3><pre>${fileData}</pre>`;
+                                previewContainer.appendChild(fileElement);
+                            });
+                        });
+                    });
+                };
+
+                // 读取文件为 ArrayBuffer
+                reader.readAsArrayBuffer(file);
+            }
+        });
+    </script>
+</body>
+
+</html>
