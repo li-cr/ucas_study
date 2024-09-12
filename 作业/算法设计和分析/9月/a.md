@@ -15,7 +15,21 @@
     \therefore O(n) = n$  
 <!-- $T(n) = \displaystyle\sum{T(len_i)}+n。其中由于每分割1次，其字母集的个数-1$ -->
 4. 空间复杂度：
-  
+
+### 2. Cutting Bamboo Poles
+
+1. 
+2. 
+3. 
+4. 
+
+### 3. Multiple Calculations
+
+1. 
+2. 
+3. 
+4. 
+
 ### 4. N-sum
 
 1. 将B数组构造成 $F(x, 1) = \sum{x^{b[i]}}。\\ F(x, n)=F(x,1)^n, ans=F(x,n)中x^m的系数。其中可以用NTT优化+NTT后将x前的系数变为bool值$
@@ -42,9 +56,14 @@
    $其中间暂存结果O(n^2)$
 
 
+### 5. Ex.  Unary Cubic Equation
 
+1. 
+2. 
+3. 
+4. 
 
-### 4. N-sum
+### 6. Ex.  Distance
 
 1. 
 2. 
