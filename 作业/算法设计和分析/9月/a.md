@@ -299,14 +299,24 @@ $首先对\,arr2\,使用归并排序，再遍历\,arr1\,的每个元素，寻找
 
 ```python
 arr1, arr2 = [], []
+# 归并排序
+merge_sort(arr2)
 
-merge_sort(arr1)
-
+ans = 0
 for i in range(n):
-    
-
+    pos = arr2.lower_bound(arr1[i])
+    if (pos == n or arr2[pos] - arr1[i] > d) and (pos == 0 or arr1[i] - arr2[pos-1] > d):        
+        ans ++
 ```
 
 ### 6.3 Time complexity
 
+进行了一次归并排序和n次二分。
+
+$O(n)=n\log n$
+
 ### 6.4 Space complexity
+
+归并排序使用额外空间。
+
+$O(n)=n$
