@@ -1,11 +1,14 @@
+# 网上的作业
+
 [A - Nearest Point](A_problem.png "https://vjudge.net/contest/653782#problem/A")
-<br>
+
 [B - A unique permutation](B_problem.png "https://vjudge.net/contest/653782#problem/B")
-<br>
+
 [C - Lost items](C_problem.png "https://vjudge.net/contest/653782#problem/C")
-<br>
+
 [D - Extra Problem](D_problem.png "https://www.luogu.com.cn/problem/P4183")
-D 不会。
+
+## A
 
 ```cpp
 #include <bits/stdc++.h>
@@ -52,6 +55,8 @@ int main()
 }
 ```
 
+## B
+
 ```cpp
 #include <bits/stdc++.h>
 
@@ -94,6 +99,8 @@ int main()
     return 0;
 }
 ```
+
+## C
 
 ```cpp
 #include <bits/stdc++.h>
@@ -182,87 +189,139 @@ int main()
 }
 ```
 
+## D
+
 ```cpp
 #include <bits/stdc++.h>
 
-using namespace std;
-
-const int N = 7e5 + 10;
+const int N = 7e4 + 10;
 std::vector<int> G[N];
-int deep[N], dp[N], dis[N], ans[N];
+int n, cnt, dp[N], dep[N], list[N], ans[N];
 
-int dfs2(int u, int fa)
+int rt, mx[N], siz[N];
+bool vis[N];
+
+int c[N << 2];
+void add(int x, int z){ for (; x <= 2 * n;c[x] +=z, x += x & -x); }
+int ask(int x)
 {
-    deep[u] = deep[fa] + 1;
-    int ans = 0;
-    for (auto x : G[u])
-    {
-        if (x == fa)
-            continue;
-        ans += dfs2(x, u);
-    }
-    if (deep[u] >= dis[u])
-        ans += 2 - G[u].size();
-    return ans;
+    int res = 0;
+    for (; x;res += c[x], x -= x & -x);
+    return res;
 }
-
-void calcdis(int n)
+void dfs1(int u, int fa)
 {
-    queue<int> q;
-
-    for (int i = 1; i <= n; i++)
+    for (auto v : G[u])
     {
-        dis[i] = -1;
-        if (G[i].size() == 1)
-            dis[i] = 0, q.push(i);
+        if (v == fa) continue;
+        dfs1(v, u);
+        dp[u] = std::min(dp[u], dp[v] + 1);
     }
-    while (q.size())
+}
+void dfs2(int u, int fa)
+{
+    for (auto v : G[u])
     {
-        int u = q.front();
-        q.pop();
-        for (auto x : G[u])
-            if (dis[x] == -1)
-                dis[x] = dis[u] + 1, q.push(x);
+        if (v == fa) continue;
+        dp[v] = std::min(dp[v], dp[u] + 1);
+        dfs2(v, u);
     }
 }
 
-
-void dfs(int rt, int fa)
+void getroot(int u, int fa, int S)
 {
+    siz[u] = 1, mx[u] = 0;
+    for (auto v : G[u])
+     {
+        if (vis[v] || v == fa) continue;
+        getroot(v, u, S);
+        siz[u] += siz[v];
+        mx[u] = std::max(mx[u], siz[v]);
+     }
+    mx[u] = std::max(mx[u], S - siz[u]);
 
+    if (!rt || mx[u] < mx[rt])
+        rt = u;
 }
 
+void getdis(int u, int fa)
+{
+    list[cnt++] = u;
+    for (auto v : G[u])
+    {
+        if (v == fa || vis[v]) continue;
+        dep[v] = dep[u] + 1;
+        getdis(v, u);
+    }
+}
+void solve(int u, int deep_i, int va)
+{
+    dep[u] = deep_i;
+    cnt = 0;
+    getdis(u, 0);
+    for (int i = 0; i < cnt; i++)
+        add(dp[list[i]] - dep[list[i]] + n, 2 - G[list[i]].size());
+
+    for (int i = 0; i < cnt; i++)
+    {
+        int u = list[i], deg = G[u].size();
+        add(dp[u] - dep[u] + n, deg - 2);
+        ans[u] += ask(dep[u] + n) * va;
+        add(dp[u] - dep[u] + n, 2 - deg);
+    }
+    for (int i = 0; i < cnt; i++)
+        add(dp[list[i]] - dep[list[i]] + n, G[list[i]].size() - 2);
+}
+
+void divide(int u)
+{
+    solve(u, 0, 1);
+    vis[u] = 1;
+    for (auto v : G[u])
+    {
+        if (vis[v]) continue;
+        solve(v, 1, -1);
+        rt = 0;
+        getroot(v, 0, siz[v]);
+        divide(rt);
+    }
+}
 int main()
 {
-    int n;
-    cin >> n;
-    deep[0] = -1;
-    for (int i = 1; i < n; i++)
+    std::cin >> n;
+    for (int i = 1, x, y; i < n; i++)
     {
-        int u, v;
-        cin >> u >> v;
-        G[v].push_back(u);
-        G[u].push_back(v);
+        std::cin >> x >> y;
+        G[x].push_back(y);
+        G[y].push_back(x);
     }
-    calcdis(n);
-    int rt = 1;
-    ans[rt] = dfs2(rt, 0);
-    dfs(rt, 0);
-    // for (int i = 1; i <= n; i++)
-    // {
-    //     int ans = dfs2(i, 0);
-    //     if (G[i].size() == 1)
-    //         ans = 1;
-    //     std::cout << ans;
-    //     if (i < n)
-    //         puts("");
-    // }
+    for (int i = 1; i <= n; i++)
+        dp[i] = G[i].size() > 1 ? 1e6 : 0;
+    dfs1(1, 0);
+    dfs2(1, 0);
+
+    getroot(1, 0, n);
+    divide(rt);
+    for (int i = 1; i <= n; i++)
+        std::cout << (G[i].size() == 1 ? 1 : ans[i]) << "\n";
     return 0;
 }
-
 /*
-deep[u] >= dis[u] && deep[fa] < dis[fa]
-sum_u
+6
+1 2
+1 3
+3 4
+3 5
+4 6
+
+8
+1 5
+1 2
+1 3
+2 7
+4 7
+7 8
+3 6
 
 */
 ```

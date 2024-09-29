@@ -93,8 +93,8 @@ int main()
     scanf("%d", &n);
     for (int i = 1, x, y; i < n; i++)
     {
-        // scanf("%d%d", &x, &y);
-        x = i, y = i + 1;
+        scanf("%d%d", &x, &y);
+        // x = i, y = i + 1;
         e[x].pb(y), e[y].pb(x);
         deg[x]++, deg[y]++;
     }

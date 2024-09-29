@@ -21,7 +21,6 @@ int ask(int x)
 }
 void dfs1(int u, int fa)
 {
-    dp[u] = G[u].size() - 1 ? 1e7 : 0;
     for (auto v : G[u])
         if (v != fa)
         {
@@ -90,7 +89,7 @@ void divide(int u)
     vis[u] = 1;
     for (auto v : G[u])
     {
-        if (vis[u])
+        if (vis[v])
             continue;
         solve(v, 1, -1);
         rt = 0;
@@ -108,6 +107,9 @@ int main()
         G[x].push_back(y);
         G[y].push_back(x);
     }
+    for (int i = 1; i <= n; i++)
+        if (G[i].size() > 1)
+            dp[i] = 1e6;
     dfs1(1, 0);
     dfs2(1, 0);
 
