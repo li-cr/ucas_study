@@ -1,61 +1,138 @@
 #include <bits/stdc++.h>
-const int N = 1e5 + 10;
-char c[N];
-std::optional<std::vector<std::pair<int, int>>> split(int l, int r)
+
+const int N = 7e4 + 10;
+std::vector<int> G[N];
+int n, cnt, dp[N], dep[N], list[N], ans[N];
+
+int rt, mx[N], siz[N];
+bool vis[N];
+int c[N << 2];
+void add(int x, int z)
 {
-    std::vector<std::pair<int, int>> ans;
-    if (l >= r)
-        return ans;
+    for (; x <= 2 * n; x += x & -x)
+        c[x] += z;
+}
+int ask(int x)
+{
+    int res = 0;
+    for (; x; x -= x & -x)
+        res += c[x];
+    return res;
+}
+void dfs1(int u, int fa)
+{
+    dp[u] = G[u].size() - 1 ? 1e7 : 0;
+    for (auto v : G[u])
+        if (v != fa)
+        {
+            dfs1(v, u);
+            dp[u] = std::min(dp[u], dp[v] + 1);
+        }
+}
+void dfs2(int u, int fa)
+{
+    for (auto v : G[u])
+        if (v != fa)
+        {
+            dp[v] = std::min(dp[v], dp[u] + 1);
+            dfs2(v, u);
+        }
+}
 
-    bool dis[110] = {false}, wa[26] = {false};
-    for (int i = l; i <= r; i++)
-        dis[c[i]] = true;
-    for (int i = 0; i < 26; i++)
-        wa[i] = dis['a' + i] ^ dis['A' + i];
+void getroot(int u, int fa, int S)
+{
+    siz[u] = 1, mx[u] = 0;
+    for (auto v : G[u])
+        if (!vis[v] && v != fa)
+        {
+            getroot(v, u, S);
+            siz[u] += siz[v];
+            mx[u] = std::max(mx[u], siz[v]);
+        }
+    mx[u] = std::max(mx[u], S - siz[u]);
+    if (!rt || mx[u] < mx[rt])
+        rt = u;
+}
 
-    bool f = false;
-    for (int i = l; i <= r; i++)
+void getdis(int u, int fa)
+{
+    list[cnt++] = u;
+    for (auto v : G[u])
     {
-        if (!wa[c[i] - (islower(c[i]) ? 'a' : 'A')])
+        if (v == fa || vis[v])
             continue;
-        if (i - 1 - l + 1 > 1)
-            ans.push_back({l, i - 1});
-        f = true;
-        l = i + 1;
+        dep[v] = dep[u] + 1;
+        getdis(v, u);
     }
-    if (l < r)
-        ans.push_back({l, r});
-    if (f)
-        return ans;
-    return std::nullopt;
+}
+void solve(int u, int deep_i, int va)
+{
+    dep[u] = deep_i;
+    cnt = 0;
+    getdis(u, 0);
+    for (int i = 0; i < cnt; i++)
+        add(dp[list[i]] - dep[list[i]] + n, 2 - G[list[i]].size());
+
+    for (int i = 0; i < cnt; i++)
+    {
+        int u = list[i], deg = G[u].size();
+        add(dp[u] - dep[u] + n, deg - 2);
+        ans[u] += ask(dep[u] + n) * va;
+        add(dp[u] - dep[u] + n, 2 - deg);
+    }
+    for (int i = 0; i < cnt; i++)
+        add(dp[list[i]] - dep[list[i]] + n, G[list[i]].size() - 2);
+}
+
+void divide(int u)
+{
+    solve(u, 0, 1);
+    vis[u] = 1;
+    for (auto v : G[u])
+    {
+        if (vis[u])
+            continue;
+        solve(v, 1, -1);
+        rt = 0;
+        getroot(v, 0, siz[v]);
+        divide(rt);
+    }
 }
 int main()
 {
-    scanf("%s", c + 1);
-    std::queue<std::pair<int, int>> qu;
-    qu.push({1, strlen(c + 1)});
-    int L = 0, R = 0;
-    while (qu.size())
+    std::cin >> n;
+    for (int i = 1, x, y; i < n; i++)
     {
-        auto [l, r] = qu.front();
-        qu.pop();
-        auto list = split(l, r);
-        std::cout << l << ' ' << r << "\n";
-        if (!list.has_value())
-        {
-            if (R - L < r - l)
-                R = r, L = l;
-            continue;
-        }
-        for (auto [l, r] : list.value())
-            qu.push({l, r});
+        std::cin >> x >> y;
+        // x = i, y = i + 1;
+        G[x].push_back(y);
+        G[y].push_back(x);
     }
-    c[R + 1] = '\0';
-    std::cout << " --- " << L << " " << R << " --- " << "\n";
-    std::cout << c + L;
+    dfs1(1, 0);
+    dfs2(1, 0);
+
+    getroot(1, 0, n);
+    divide(rt);
+    // solve(rt, 0, 1);
+    for (int i = 1; i <= n; i++)
+        std::cout << (G[i].size() == 1 ? 1 : ans[i]) << "\n";
     return 0;
 }
 /*
+6
+1 2
+1 3
+3 4
+3 5
+4 6
 
-aaBBAAbZZZAAAUUU
+8
+1 5
+1 2
+1 3
+2 7
+4 7
+7 8
+3 6
+
 */
