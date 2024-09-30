@@ -1,140 +1,77 @@
 #include <bits/stdc++.h>
 
-const int N = 7e4 + 10;
-std::vector<int> G[N];
-int n, cnt, dp[N], dep[N], list[N], ans[N];
+const int N = 5e1 + 10;
+using LL = long long;
 
-int rt, mx[N], siz[N];
-bool vis[N];
-int c[N << 2];
-void add(int x, int z)
+int a[N][N], dp[N][N][N][N];
+bool dis[N][N][N][N];
+bool dis_(int nx, int ny, int n, int m)
 {
-    for (; x <= 2 * n; x += x & -x)
-        c[x] += z;
+    return (nx < 1 || nx > n || ny < 1 || ny > m);
 }
-int ask(int x)
+int dfs(int i, int j, int x, int y, int n, int m)
 {
-    int res = 0;
-    for (; x; x -= x & -x)
-        res += c[x];
-    return res;
-}
-void dfs1(int u, int fa)
-{
-    for (auto v : G[u])
-        if (v != fa)
+    if (dis[i][j][x][y])
+        return dp[i][j][x][y];
+    dis[i][j][x][y] = true;
+    int dx[4] = {-1, 0, 1, 0}, dy[4] = {0, -1, 0, 1};
+
+    for (int u = 2; u < 4; u++)
+        for (int v = 2; v < 4; v++)
         {
-            dfs1(v, u);
-            dp[u] = std::min(dp[u], dp[v] + 1);
+            int nx = x + dx[u], ny = y + dy[u];
+            int ni = i + dx[v], nj = j + dy[v];
+            if (dis_(nx, ny, n, m) || dis_(ni, nj, n, m))
+                continue;
+            int value = dfs(ni, nj, nx, ny, n, m);
+            value += a[i][j] + a[x][y];
+            if (i == x && j == y)
+                value -= a[i][j];
+            // std::cout << i << ' ' << j << ' ' << x << ' ' << y << ' ' << dp[i][j][x][y] << " " << value << " "
+            //   << a[i][j] << " " << a[x][y] << "\n";
+
+            dp[i][j][x][y] = std::max(dp[i][j][x][y], value);
         }
-}
-void dfs2(int u, int fa)
-{
-    for (auto v : G[u])
-        if (v != fa)
-        {
-            dp[v] = std::min(dp[v], dp[u] + 1);
-            dfs2(v, u);
-        }
-}
-
-void getroot(int u, int fa, int S)
-{
-    siz[u] = 1, mx[u] = 0;
-    for (auto v : G[u])
-        if (!vis[v] && v != fa)
-        {
-            getroot(v, u, S);
-            siz[u] += siz[v];
-            mx[u] = std::max(mx[u], siz[v]);
-        }
-    mx[u] = std::max(mx[u], S - siz[u]);
-    if (!rt || mx[u] < mx[rt])
-        rt = u;
-}
-
-void getdis(int u, int fa)
-{
-    list[cnt++] = u;
-    for (auto v : G[u])
-    {
-        if (v == fa || vis[v])
-            continue;
-        dep[v] = dep[u] + 1;
-        getdis(v, u);
-    }
-}
-void solve(int u, int deep_i, int va)
-{
-    dep[u] = deep_i;
-    cnt = 0;
-    getdis(u, 0);
-    for (int i = 0; i < cnt; i++)
-        add(dp[list[i]] - dep[list[i]] + n, 2 - G[list[i]].size());
-
-    for (int i = 0; i < cnt; i++)
-    {
-        int u = list[i], deg = G[u].size();
-        add(dp[u] - dep[u] + n, deg - 2);
-        ans[u] += ask(dep[u] + n) * va;
-        add(dp[u] - dep[u] + n, 2 - deg);
-    }
-    for (int i = 0; i < cnt; i++)
-        add(dp[list[i]] - dep[list[i]] + n, G[list[i]].size() - 2);
-}
-
-void divide(int u)
-{
-    solve(u, 0, 1);
-    vis[u] = 1;
-    for (auto v : G[u])
-    {
-        if (vis[v])
-            continue;
-        solve(v, 1, -1);
-        rt = 0;
-        getroot(v, 0, siz[v]);
-        divide(rt);
-    }
+    return dp[i][j][x][y];
 }
 int main()
 {
-    std::cin >> n;
-    for (int i = 1, x, y; i < n; i++)
-    {
-        std::cin >> x >> y;
-        // x = i, y = i + 1;
-        G[x].push_back(y);
-        G[y].push_back(x);
-    }
+    int n, m;
+    std::cin >> n >> m;
     for (int i = 1; i <= n; i++)
-        if (G[i].size() > 1)
-            dp[i] = 1e6;
-    dfs1(1, 0);
-    dfs2(1, 0);
-
-    getroot(1, 0, n);
-    divide(rt);
-    // solve(rt, 0, 1);
-    for (int i = 1; i <= n; i++)
-        std::cout << (G[i].size() == 1 ? 1 : ans[i]) << "\n";
+        for (int j = 1; j <= m; j++)
+            std::cin >> a[i][j];
+    dfs(1, 1, 1, 1, n, m);
+    std::cout << dp[1][1][1][1];
+    // dp[i][j][x][y] =
     return 0;
 }
 /*
-6
-1 2
-1 3
-3 4
-3 5
-4 6
+2 2
+0 3
+3 0
 
-8
-1 5
-1 2
-1 3
-2 7
-4 7
-7 8
-3 6
+3 3
+0 3 9
+2 8 5
+5 7 0
+1
+4
+>><<
+>>><
+4
+4
+>><<
+>>><
+2
+><
+><
+4
+>>><
+>><<
+6
+>><<><
+><>>><
+
 
 */
