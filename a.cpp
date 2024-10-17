@@ -3,33 +3,18 @@
 const int N = 5e1 + 10;
 using LL = long long;
 
-std::map<std::string, int> ma[N];
-std::vector<std::string> v;
-
 int main()
 {
-    int n;
-    std::cin >> n;
-    std::string ans;
-    while (n--)
+    std::unordered_map<int, std::shared_ptr<std::pair<int, int>>> a;
+    std::pair<int, int> X = {1, 1};
+    for (int i = 1; i <= 1000; i++)
+        a[i] = std::make_shared<std::pair<int, int>>(X);
+    for (auto &x : a)
     {
-
-        int x;
-        char c[100];
-        scanf("%d %c %s", &x, c, c + 1);
-        std::string a(c + 1);
-        std::cout << x << " " << a << "\n";
-
-        ans += std::to_string(x) + "\\;:\\;";
-        // std::cout << "|||" << ans << "<<<<";
-        for (int i = 0; i < a.size(); i += 8)
-        {
-            ans += a.substr(i, 8) + "\\;";
-        }
-
-        ans += '\n';
+        std::cout << x.first << " " << x.second->first << "\n";
+        a.erase(x.first);
     }
-    std::cout << ans;
+
     return 0;
 }
 /*
