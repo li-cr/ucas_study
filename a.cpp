@@ -1,19 +1,14 @@
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
 
 const int N = 5e1 + 10;
 using LL = long long;
+double f[N], d[N];
 
 int main()
 {
-    std::unordered_map<int, std::shared_ptr<std::pair<int, int>>> a;
-    std::pair<int, int> X = {1, 1};
-    for (int i = 1; i <= 1000; i++)
-        a[i] = std::make_shared<std::pair<int, int>>(X);
-    for (auto &x : a)
-    {
-        std::cout << x.first << " " << x.second->first << "\n";
-        a.erase(x.first);
-    }
+    // double x;
+    for (int i = 100; i >= 0; i--)
+        d[i] += f[i] * 10 + d[i];
 
     return 0;
 }
