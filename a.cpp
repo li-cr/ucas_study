@@ -1,26 +1,50 @@
-// #include <bits/stdc++.h>
+#include <bits/stdc++.h>
 
-const int N = 5e1 + 10;
+const int N = 5e5 + 10;
 using LL = long long;
-double f[N], d[N];
+// double f[N], d[N];
+int a[N], c[N];
+
+int solve()
+{
+    int n;
+    std::cin >> n;
+    std::priority_queue<int, std::vector<int>> qu;
+    // int ans = 0;
+    std::vector<std::pair<int, int>> v;
+    v.push_back({0, 0});
+    for (int i = 1; i <= n; i++)
+    {
+        std::cin >> a[i] >> c[i];
+        v.push_back({a[i], c[i]});
+    }
+    sort(v.begin(), v.end());
+    int L, P;
+    std::cin >> L >> P;
+    int ans = 0;
+
+    for (int i = n; i >= 0; i--)
+    {
+        int a = v[i].first, b = v[i].second;
+        while (L - P > a)
+        {
+            if (!qu.size())
+                return -1;
+            ans++;
+            P += qu.top();
+            qu.pop();
+        }
+        qu.push(b);
+    }
+    return ans;
+}
 
 int main()
 {
-    // double x;
-    for (int i = 100; i >= 0; i--)
-        d[i] += f[i] * 10 + d[i];
-
-    return 0;
+    int t;
+    std::cin >> t;
+    while (t--)
+        std::cout << solve() << "\n";
 }
 /*
-9
-1 : 10000
-777 : 1111111110100001001\\
-17743 : 11111111111111000010101001111\\
-294068 : 1111111111111111110000111110010110100\\
-31251336 : 1111111111111111111111110110111001101101110001000\\
-777 : 1111111110100001001\\
-16966 : 11111111111111000001001000110\\
-276325 : 1111111111111111110000011011101100101\\
-30957268 : 1111111111111111111111110110110000101111011010100\\
-*/
+ */

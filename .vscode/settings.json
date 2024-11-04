@@ -88,6 +88,10 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "kernel.h": "c",
+        "types.h": "c",
+        "fs.h": "c",
+        "unistd.h": "c"
     }
 }
