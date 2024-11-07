@@ -41,10 +41,41 @@ int solve()
 
 int main()
 {
+    std::map<std::string, bool> s, a[5];
     int t;
     std::cin >> t;
-    while (t--)
-        std::cout << solve() << "\n";
+    for (int _ = 1; _ <= t; _++)
+    {
+        int x;
+        std::cin >> x;
+        for (int i = 1; i <= x; i++)
+        {
+            std::string c;
+            std::cin >> c;
+            s[c] = a[_][c] = true;
+        }
+    }
+    std::cout << "|  | q0 | d1 | d2 | d3 | Q |\n";
+    std::cout << "| --- | --- | --- | --- | --- | --- |\n";
+
+    for (auto [st, bo] : s)
+    {
+        std::cout << "| " << st << " | ";
+        for (int i = 1; i <= t; i++)
+            std::cout << a[i][st] << " | ";
+        double f1 = 1, f2 = 0.75, f3 = 0.25;
+        double Q = f1 * a[1][st] + f2 / 2 * (a[2][st] + a[3][st]) - f3 / 1 * (a[4][st]);
+        std::cout << (Q > 0 ? Q : 0) << "| \n";
+    }
 }
 /*
+4
+2
+banana slug
+4
+banana slug Ariolimax columbianus
+5
+Santa Cruz mountains banana slug
+4
+Santa Cruz Campus Mascot
  */
