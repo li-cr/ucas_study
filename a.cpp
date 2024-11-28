@@ -1,18 +1,29 @@
 #include <iostream>
+#include <queue>
+#include <string>
 #include <thread>
 
-int a[10], b[10];
-void f(int i)
-{
-    std::cin >> a[i] >> b[i];
-}
 int main()
 {
-    std::cout << " 大啊大王";
-    std::thread A(f, 1), B(f, 2);
-    A.join();
-    B.join();
-    std::cout << a[1] << " " << a[2] << "\n" << b[1] << " " << b[2] << "\n";
+    int n, sum = 0;
+    std::cin >> n;
+    std::vector<int> v(n);
+    for (int i = 0; i < n; i++)
+    {
+        std::cin >> v[i];
+        sum += v[i];
+    }
+    // std::cout << sum << " " << sum % n << "\n";
+    if (sum % n)
+        return std::cout << "-1", 0;
+    int asn = 0, E = 0;
+    for (auto &x : v)
+    {
+        x -= sum / n;
+        E += x;
+        asn = std::max(asn, std::max(std::abs(E), std::abs(x)));
+    }
+    std::cout << asn << "\n";
     return 0;
 }
 /*
