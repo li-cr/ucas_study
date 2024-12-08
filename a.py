@@ -1,45 +1,13 @@
-def pisano_period(m):
-    previous, current = 0, 1
-    for i in range(m * m):  # 皮萨诺周期的上限
-        previous, current = current, (previous + current) % m
+# 打开原始文件读取
+with open("input_file.txt", "r") as infile:
+    lines = infile.readlines()
 
-        # 找到周期
-        if previous == 0 and current == 1:
-            return i + 1
-
-
-def fibonacci_mod_k(n, k):
-    if k == 1:
-        return 1  # 所有斐波那契数都可以被 1 整除，返回第一个的索引
-
-    period = pisano_period(k)
-    fib_mods = []
-
-    previous, current = 0, 1
-
-    # 计算周期内的斐波那契数
-    for i in range(period):
-        fib_mods.append(previous)
-        previous, current = current, (previous + current) % k
-
-    # 获取可被 k 整除的斐波那契数的索引
-    indices = [i + 1 for i in range(period) if fib_mods[i] == 0]  # 索引从 1 开始
-
-    # 边界情况处理
-    if n <= 0:
-        return -1  # 如果 n 非法
-    if n <= len(indices):
-        return indices[n - 1] % (10**9 + 7)
-    else:
-        return -1  # 如果 n 超过可被 k 整除的数量，返回 -1
-
-
-# 主程序入口
-if __name__ == "__main__":
-    import sys
-
-    input_data = "1000000000000 1377"  # 直接设置输入
-    n, k = map(int, input_data.strip().split())
-
-    result = fibonacci_mod_k(n, k)
-    print(result)  # 输出结果
+# 打开输出文件写入
+with open("a.txt", "w") as outfile:
+    for line in lines[2:]:  # 跳过前两行
+        columns = line.split()  # 假设是空格或制表符分隔的文件
+        if len(columns) > 7:  # 确保至少有8列
+            # 提取第A列和第H列，A是1-based索引（Python索引从0开始，所以A列是0）
+            # 假设A列是第0列，H列是第7列
+            output_line = f"{columns[0]}\t{columns[7]}\n"
+            outfile.write(output_line)
