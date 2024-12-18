@@ -11,10 +11,13 @@ url = "https://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nr.gz"
 # url = "https://ftp.ncbi.nlm.nih.gov/blast/db/18S_fungal_sequences.tar.gz"
 # 下载文件保存的路径
 # file_name = "./data/nr.gz"
-file_name = "./data/nr.gz"
+file_name = "./nr.gz"
+
+url = "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/08/PXD003472/QExactiveHF_D2__500ng_500ugEcoli_120min.raw"
+file_name = "./a"
 
 # 设置线程数量
-threads = 10  # 可以根据带宽和机器的性能调整
+threads = 30  # 可以根据带宽和机器的性能调整
 
 size = 10 * 8 * 1024 * 1024
 
